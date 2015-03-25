@@ -1,6 +1,6 @@
 /**
  * @license jquery.panzoom.js v2.0.5
- * Updated: Thu Jul 03 2014
+ * Updated: Wed Mar 25 2015
  * Add pan and zoom functionality to any element
  * Copyright (c) 2014 timmy willison
  * Released under the MIT license
@@ -718,14 +718,14 @@
 			if (focal && !options.disablePan) {
 				// Adapted from code by Florian Günther
 				// https://github.com/florianguenther/zui53
-				var dims = this._checkDims();
+				//var dims = this._checkDims();
 				var clientX = focal.clientX;
 				var clientY = focal.clientY;
 				// Adjust the focal point for default transform-origin => 50% 50%
-				if (!this.isSVG) {
-					clientX -= (dims.width + dims.widthBorder) / 2;
-					clientY -= (dims.height + dims.heightBorder) / 2;
-				}
+				//if (!this.isSVG) {
+				//	clientX -= (dims.width + dims.widthBorder) / 2;
+				//	clientY -= (dims.height + dims.heightBorder) / 2;
+				//}
 				var clientV = new Vector(clientX, clientY, 1);
 				var surfaceM = new Matrix(matrix);
 				// Supply an offset manually if necessary
@@ -870,7 +870,7 @@
 				// Promote the element to it's own compositor layer
 				'backface-visibility': 'hidden',
 				// Set to defaults for the namespace
-				'transform-origin': this.isSVG ? '0 0' : '50% 50%'
+				'transform-origin': '0 0'
 			};
 			// Set elem styles
 			if (!this.options.disablePan) {
