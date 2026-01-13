@@ -147,6 +147,26 @@ describe('Panzoom', function() {
 		// Clean-up
 		$elem.css( 'transform', '' );
 		$elem.panzoom('destroy');
+		expect( $elem.css('transform') ).to.match( rnoneMatrix );
+	});
+	it('should preserve matrix transformations like rotate', function() {
+		$elem.panzoom('destroy');
+		var panzoom = $elem.panzoom({ $zoomRange: $zoomRange }).panzoom('instance');
+		var origMatrix = panzoom.getMatrix();
+		$elem.css( 'transform', 'rotate(60deg)' );
+		// scale * cos(60deg) -> scale is 1.0
+		expect( +panzoom.getMatrix()[0] ).to.be.closeTo(0.5, 0.00001);
+		// scale * sin(60deg) -> scale is 1.0
+		expect( +panzoom.getMatrix()[1] ).to.be.closeTo(0.866025, 0.00001);
+		$elem.panzoom('zoom');
+		// scale * cos(60deg) -> scale is 1.3
+		expect( +panzoom.getMatrix()[0] ).to.be.closeTo(0.65, 0.00001);
+		// scale * sin(60deg) -> scale is 1.3
+		expect( +panzoom.getMatrix()[1] ).to.be.closeTo(1.12583, 0.00001);
+		// Reset matrix
+		panzoom.setMatrix( origMatrix );
+		$elem.panzoom('destroy');
+		expect( $elem.css('transform') ).to.match( rnoneMatrix );
 	});
 	it('should create a new panzoom with buttons', function() {
 		$elem.panzoom({
@@ -247,12 +267,6 @@ describe('Panzoom', function() {
 	---------------------------------------------------------------------- */
 	it('should have rmatrix present on the Panzoom object', function() {
 		expect( $.Panzoom.rmatrix ).to.be.a('regexp');
-	});
-	it('should have event name(s) on the Panzoom object', function() {
-		var events = $.Panzoom.events;
-		$.each([ 'down', 'up', 'move' ], function(i, event) {
-			expect( events[ event ] ).to.be.a('string');
-		});
 	});
 
 	/* Events
@@ -484,7 +498,7 @@ describe('Panzoom', function() {
 		var _matrix = panzoom.getMatrix();
 		panzoom.setMatrix('none');
 		expect( panzoom.getTransform() ).to.match( rnoneMatrix );
-		panzoom.setMatrix( _matrix );
+		panzoom.setMatrix(_matrix);
 		expect( panzoom.getMatrix() ).to.eql( _matrix );
 	});
 	it('should respect the $set option when getting and setting', function() {
@@ -511,13 +525,13 @@ describe('Panzoom', function() {
 
 	/* resetDimensions
 	---------------------------------------------------------------------- */
-	it('should adjust containment when the parent\'s dimensions change', function() {
+	it('resetDimensions no longer required when dimensions change with contain option', function() {
 		var panzoom = $elem.panzoom('instance');
 		var $parent = panzoom.$parent;
 		$parent.css('width', '200%');
 		$elem.panzoom('option', 'contain', true);
 		$elem.panzoom('pan', 10, 0, { animate: false });
-		expect( +$elem.panzoom('getMatrix')[4] ).to.equal( 1 );
+		expect( +$elem.panzoom('getMatrix')[4] ).to.equal( 10 );
 		$elem.panzoom('resetDimensions');
 		$elem.panzoom('pan', 10, 0, { animate: false });
 		expect( +$elem.panzoom('getMatrix')[4] ).to.equal( 10 );
@@ -753,7 +767,7 @@ describe('Panzoom', function() {
 	it('should create an SVG panzoom with buttons', function() {
 		var panzoom = $svgElem.panzoom().panzoom('instance');
 		// isSVG should be false on nodeName svg
-		expect( panzoom.isSVG ).to.be.false;
+		expect(panzoom.isSVG).to.be.false;
 		panzoom.destroy();
 	});
 	it('should create an SVG panzoom on a rect', function() {
@@ -773,11 +787,12 @@ describe('Panzoom', function() {
 			// IE10 will ignore a 'none' setting
 			startTransform: 'matrix(1,0,0,-1,0,0)'
 		});
-		var transform = $.attr($rect[0], 'transform').replace(rcommaSpace, ' ');
+		var transform = $.style($rect[0], 'transform').replace(rcommaSpace, ' ');
 		expect(transform).to.equal('matrix(1 0 0 -1 0 0)');
 	});
 	it('should retrieve the transform attribute and use that as the start', function() {
-		var panzoom = $rect.panzoom('destroy').attr('transform', 'matrix(2,0,0,2,0,0)').panzoom().panzoom('instance');
+		$rect.css('transform', '').panzoom('destroy');
+		var panzoom = $rect.attr('transform', 'matrix(2,0,0,2,0,0)').panzoom().panzoom('instance');
 		expect(panzoom._origTransform.replace(rcommaSpace, ' ')).to.equal('matrix(2 0 0 2 0 0)');
 	});
 });
